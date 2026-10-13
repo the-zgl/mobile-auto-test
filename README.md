@@ -1,4 +1,4 @@
-# 移动端自动化测试框架（Appium + pytest + CI）
+﻿# 移动端自动化测试框架（Appium + pytest + CI）
 
 ![CI](https://github.com/<你的用户名>/mobile-auto-test/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -11,8 +11,9 @@
 > 目标：克隆下来就能真实跑通的测试工程，而不是只能看的示例代码。
 >
 > **当前状态（本机实测，非设想）**：已在 **Android 9（API 28）/ x86_64 模拟器 `emulator-5560`** 上
-> **全量跑通 18 条用例 —— `18 passed in 162.55s (0:02:42)`**，HTML 报告生成在 `reports/report.html`；
-> `gradlew assembleDebug` **BUILD SUCCESSFUL**，APK 约 **3.02 MB**，`adb install -r` 返回 **Success**。
+> **连续 3 次全量 18 条用例全部通过（`18 passed`，单次约 2 分 20 秒 ~ 2 分 40 秒）**，
+> HTML 报告生成在 `reports/report.html`；`gradlew assembleDebug` **BUILD SUCCESSFUL**，
+> APK 约 **3.02 MB**，`adb install -r` 返回 **Success**。
 > **未验证项**：没有在**真机（ARM）**上跑过（只在 x86_64 模拟器验证）。
 
 ## 技术要点
@@ -261,6 +262,42 @@ pytest --keep-app-data # 想观察「连续状态」时，用这个参数跳过�
 - 顺带回答一个常见疑问：「为什么不用 `pytest-rerunfailures` 重跑？」——
  **状态污染导致的是必现失败，重跑还是会失败，只是把问题藏起来；偶发失败才考虑重试。**
 
+
+## 踩坑记录 2：全量场景下稳定的偶发失败（单跑全绿、连跑必挂）
+
+**现象**：修好状态污染后，单跑那条用例每次通过，但**放进全量套件里连续 3 次稳定失败**
+（1 failed, 17 passed）。失败的是 	est_login_repeated_click_does_not_duplicate_balance，
+报错是 `TimeoutException: com.daping.demoshop 未在 15s 内退出`。
+
+**排查过程**（这段比结论更有价值）：
+
+1. 第一反应是"偶发"，于是加等待：`terminate_app` 后轮询进程状态 → **没用**，连续 3 次都超时。
+2. 用 `adb shell pidof` / `ps -A` 手动核对，发现 **App 其实早就退出了**（force-stop 后无进程）。
+   → 说明不是 App 没退，是**我的判断条件写错了**。
+3. 翻 Appium 文档确认 `query_app_state` 的取值语义：
+
+   | 值 | 含义 |
+   |---|---|
+   | 0 | 未安装 |
+   | 1 | 未运行 |
+   | 2 | 后台挂起 |
+   | 3 | 后台运行 |
+   | 4 | **前台运行** |
+
+   我原来写的是 `== 4`，等于在等"App 在前台运行"——App 都退了，永远等不到，必然超时。
+   正确写法是 **`!= 4`**。
+
+4. 另外补了两个稳健性处理：`terminate_app` 在某些 ROM 上不可靠（命令返回成功但进程还在），
+   所以先 `adb shell am force-stop` 兜底；启动后用 `current_activity` 轮询确认
+   `LoginActivity` 真的在前台，避免操作打在旧页面上。
+
+**结果**：原失败组合稳定通过，并**连续 3 次全量 18/18 全绿**。
+
+**这个修复的价值**
+- 它示范了排查顺序：**先怀疑自己的判断条件，再怀疑被测对象**。这里 adb 实测证明 App 已退出，
+  问题立刻从"App 不听话"转成"我的等待条件写反了"。
+- 它暴露了一个常见盲区：**`query_app_state` 的语义不是"有没有退出"，而是"在哪个状态"**。
+- 它还说明"单跑通过 ≠ 用例是好的"——**顺序依赖和共享状态**只有放进全量套件才暴露。
 ## 核心知识点
 
 - **Page Object Model**：元素定位与业务流程分离，App 改版只改一处；用属性（`@property`）把
