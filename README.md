@@ -1,12 +1,17 @@
 # 移动端自动化测试框架（Appium + pytest + CI）
 
+![CI](https://github.com/<你的用户名>/mobile-auto-test/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Appium](https://img.shields.io/badge/Appium-2.19.0-green)
+![pytest](https://img.shields.io/badge/pytest-18%20tests-brightgreen)
+
 一个 **移动端测试开发** 方向的实践项目：一套按 **Page Object Model** 分层的 Android 自动化测试框架，
 覆盖「**账号登录**」与「**购买 / 支付**」两条核心业务链路，自带被测 App，接入 **GitHub Actions** 持续集成。
 
 > 目标：克隆下来就能真实跑通的测试工程，而不是只能看的示例代码。
 >
-> **当前状态（本机实测，非设想）**：已在 **Android 9（API 28）/ x86_64 模拟器 `emulator-5554`** 上
-> **全量跑通 18 条用例 —— `18 passed in 136.45s (0:02:16)`**，HTML 报告生成在 `reports/report.html`；
+> **当前状态（本机实测，非设想）**：已在 **Android 9（API 28）/ x86_64 模拟器 `emulator-5560`** 上
+> **全量跑通 18 条用例 —— `18 passed in 162.55s (0:02:42)`**，HTML 报告生成在 `reports/report.html`；
 > `gradlew assembleDebug` **BUILD SUCCESSFUL**，APK 约 **3.02 MB**，`adb install -r` 返回 **Success**。
 > **未验证项**：没有在**真机（ARM）**上跑过（只在 x86_64 模拟器验证）。
 
