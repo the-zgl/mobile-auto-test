@@ -9,7 +9,7 @@ caps:
   platformName: "Android"
   # 本机模拟器实测为 Android 9（API 28）；用 `adb shell getprop ro.build.version.release` 可确认
   platformVersion: "9"
-  deviceName: "emulator-5560"    # adb devices 里看到的设备名（雷电模拟器 - test 实例）
+  deviceName: "emulator-5560"    # adb devices 里看到的设备名（多开时请指定目标实例）
   automationName: "UiAutomator2"
   appPackage: "com.daping.demoshop"   # 被测 App 包名（本项目自带的 demo-app）
   appActivity: ".LoginActivity"       # 被测 App 启动页
