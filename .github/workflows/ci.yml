@@ -97,6 +97,7 @@ jobs:
             echo "然后把 gradlew / gradlew.bat / gradle/wrapper/ 一起提交上来。"
             exit 1
           fi
+          # 仓库里已用 git update-index --chmod=+x 记录执行位，这里再兜底一次
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
