@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">猫咪商城 Demo</string>
+    <string name="login_title">账号登录</string>
+    <string name="hint_username">请输入账号</string>
+    <string name="hint_password">请输入密码</string>
+    <string name="action_login">登录</string>
+    <string name="login_tip">测试账号：user1 / 123456</string>
+    <string name="balance_placeholder">余额：--</string>
+    <string name="action_buy">购买</string>
+</resources>

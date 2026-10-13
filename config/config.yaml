@@ -1,0 +1,16 @@
+# Appium 自动化测试配置
+# 按你的环境修改 deviceName / platformVersion / appPackage / appActivity
+# deviceName 用 `adb devices` 命令查看（模拟器一般是 emulator-5554）
+
+appium:
+  url: "http://127.0.0.1:4723"   # Appium 服务地址
+
+caps:
+  platformName: "Android"
+  # 本机模拟器实测为 Android 9（API 28）；用 `adb shell getprop ro.build.version.release` 可确认
+  platformVersion: "9"
+  deviceName: "emulator-5560"    # adb devices 里看到的设备名（雷电模拟器 - test 实例）
+  automationName: "UiAutomator2"
+  appPackage: "com.daping.demoshop"   # 被测 App 包名（本项目自带的 demo-app）
+  appActivity: ".LoginActivity"       # 被测 App 启动页
+  noReset: true

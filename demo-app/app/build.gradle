@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.daping.demoshop'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.daping.demoshop"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        // 把 kotlin 标准库全家族强制对齐到同一版本。
+        // 原因：appcompat 的传递依赖里同时出现了 kotlin-stdlib 1.8.22 与
+        // kotlin-stdlib-jdk7/jdk8 1.6.21，而 jdk7/jdk8 的内容自 1.8 起已并入 stdlib，
+        // 版本不一致会让 checkDebugDuplicateClasses 直接报重复类。
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+}

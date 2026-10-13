@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  为 ListView 的每一行声明一个资源 id。
+
+  为什么需要单独声明：
+  Android 的 R.id.* 必须来自资源声明，不能在 Java 里凭空 setId(R.id.xxx)。
+  ListView 的行是复用的（convertView），没有独立的布局文件给每一行，
+  所以这里用 ids.xml 一次性声明 item_0 ~ item_4，由适配器按 position 挂上去，
+  测试脚本就能用 By.id("com.daping.demoshop:id/item_0") 精准点到第 0 行。
+-->
+<resources>
+    <item name="item_0" type="id" />
+    <item name="item_1" type="id" />
+    <item name="item_2" type="id" />
+    <item name="item_3" type="id" />
+    <item name="item_4" type="id" />
+</resources>
