@@ -114,8 +114,12 @@ jobs:
           target: google_apis
           arch: x86_64
           script: |
-            npm install -g appium
-            appium driver install uiautomator2
+            # Appium 版本要锁：最新版 Appium 3.x 要求 Node >= 20.19，
+            # 而 GitHub runner 上 npm install -g appium 默认会装最新版，driver 也跟着装最新，
+            # 组合不可控。这里显式锁到已验证过的组合。
+            npm install -g appium@2.19.0
+            appium driver install uiautomator2@4.2.1
+            appium --version
             appium --log-level info &
             sleep 15
             adb install -r demo-app/app/build/outputs/apk/debug/app-debug.apk
