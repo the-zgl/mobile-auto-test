@@ -106,8 +106,9 @@ def driver(request, config, caps):
     options.platform_name = caps["platformName"]
     options.platform_version = caps.get("platformVersion")
     options.device_name = caps.get("deviceName")
-    # 关键：同时连了多台设备（雷电多开）时，Appium 会忽略 deviceName 而自己挑一台，
-    # 结果连到没装被测 App 的那台上。用 udid 显式锁定设备，避免"连错机"这类假失败。
+    # 关键：同时连了多台设备（模拟器多开或真机 + 模拟器并存）时，
+    # Appium 会忽略 deviceName 而自己挑一台，结果可能连到没装被测 App 的那台上。
+    # 用 udid 显式锁定设备，避免「连错机」这类假失败。
     options.udid = caps.get("deviceName")
     options.automation_name = caps.get("automationName", "UiAutomator2")
     options.app_package = caps.get("appPackage")
