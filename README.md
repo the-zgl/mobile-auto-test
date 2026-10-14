@@ -1,6 +1,6 @@
 # 移动端自动化测试框架（Appium + pytest + CI）
 
-![CI](https://github.com/<你的用户名>/mobile-auto-test/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/the-zgl/mobile-auto-test/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Appium](https://img.shields.io/badge/Appium-2.19.0-green)
 ![pytest](https://img.shields.io/badge/pytest-18%20tests-brightgreen)
