@@ -233,6 +233,62 @@ pytest --keep-app-data       # 想观察「连续状态」时，用这个参数�
 - 配置可读、定位符格式合法、页面对象暴露预期定位符、
  demo-app 布局 XML 合法且包含预期控件 id、`config.yaml` 的包名与 `build.gradle` 一致、
  ListView 各行的 `item_0`~`item_4` 已在资源中声明（否则 `R.id.item_0` 编译期就报错）
+**弱网 / 断网专项（`tests/test_network.py`，4 条，需设备）**
+- `test_offline_app_still_usable`：断开数据网络后仍能登录、进商店、控件可点
+- `test_offline_purchase_still_works`：断网下本地购买流程仍正确，余额精确扣减
+- `test_network_switch_does_not_corrupt_balance`：断网 / 恢复之间反复切换，余额与提示文案不错乱
+- `test_restore_network_after_switch`：网络恢复后功能完全正常
+
+> 被测 App 的支付是**本地模拟**（不依赖真实网络请求），所以弱网用例的断言重点是
+> 「不崩溃、UI 可用、业务数据不错乱」；换成有真实网络请求的 App，同一套框架即可直接验证
+> 「弱网下支付是否重复提交 / 掉单 / 是否给出明确提示」。
+
+## 弱网测试：实现方式与踩坑（实测结论）
+
+`helpers/network_condition.py` 封装了网络环境切换。以下都是**在本机实测出来**的结论：
+
+| 方案 | 在雷电模拟器上的结果 |
+|---|---|
+| `driver.set_network_speed("gsm" / "lte")` | 不可用。它依赖 AVD 的 `-netspeed` 参数，报 `Error executing adbExec` |
+| `driver.set_network_connection(2)`（内部走 `svc data disable`） | 会把进程杀掉（exit 137 / `call killProcess`） |
+| `adb shell svc wifi disable` | 同样导致设备 offline |
+| `adb shell settings put global airplane_mode_on 1` | 能进飞行模式，但 adb 一并断开，设备 offline 后**无法远程恢复**，只能重启模拟器 |
+
+**根本原因**：雷电模拟器的 adb 通过 **host 网络端口**连接（而非本地管道），
+所以任何「关闭设备网络」的操作都会把 adb 连接本身一起断掉。
+AVD 用本地管道，不受此影响 —— 这正是 `set_network_speed` / 网络切换
+在 AVD 上正常、在雷电上不可用的原因。
+
+**工程处理**：`NetworkCondition.probe()` 会**真的做一次最小切换再切回**，
+然后确认 adb 是否仍然在线；不在线就判定「本环境不支持」，用例 `pytest.skip`
+并给出可读原因。这样在雷电上是 skipped（不是 failed），在 AVD / 真机上会真实执行。
+
+> 注意：只跑只读命令（如 `dumpsys connectivity`）来探测是不够的 ——
+> 雷电上它能正常返回 0，但 `svc data disable` 依然会杀进程。必须实测一次写操作。
+
+## 质量看板（测试平台雏形）
+
+`tools/build_dashboard.py` 把 pytest 的 JSON 报告转成一个**静态网页**，
+对应测试平台的三件套：
+
+```powershell
+# 1) 跑测试并产出 JSON 报告
+pytest --json-report --json-report-file=reports/report.json
+
+# 2) 生成质量看板
+python tools/build_dashboard.py --input reports/report.json --output reports/report.html
+```
+
+页面包含：
+
+1. **用例管理** —— 用例列表 + 模块 / 优先级标签（smoke / account / payment / network）+ 按文件聚合
+2. **执行结果** —— 用例总数、通过 / 失败 / 跳过、通过率、总耗时、结论徽章
+3. **报告详情** —— 每条用例的结果、失败原因（首行）、执行时长
+
+**设计取舍**：用「静态 HTML + 内嵌数据」而不是起 Web 服务 ——
+零依赖（不需要 Flask / Node）、可以直接丢到 GitHub Pages、也能当附件发给别人。
+需要登录鉴权、历史趋势、定时调度时，再在这个基础上加后端。
+
 
 ## 踩坑记录：用例间状态污染（`2 failed, 15 passed, 1 error` → 18 全绿）
 
